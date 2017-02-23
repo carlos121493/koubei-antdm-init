@@ -1,5 +1,6 @@
 {
   "globals": {
+    "ap": false,
     "require": false
   },
   "extends": "eslint-config-airbnb"

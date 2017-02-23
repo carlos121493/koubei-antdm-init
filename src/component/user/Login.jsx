@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { InputItem, Button, WhiteSpace, WingBlank } from 'antd-mobile';
 import { createForm } from 'rc-form';
+import { genUrlFromRoute } from '../../common/utils';
 import './user.less';
 
 class Login extends Component {
@@ -13,7 +14,9 @@ class Login extends Component {
   }
   handleSubmit(e) {
     e.preventDefault();
-    this.props.router.push('/shop/list');
+    ap.pushWindow({
+      url: genUrlFromRoute('/shop/list'),
+    });
   }
   render() {
     const { getFieldDecorator, getFieldsError } = this.props.form;

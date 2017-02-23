@@ -6,6 +6,7 @@ import brands from './data/brands';
 import areas from './data/areas';
 import category from './data/category';
 import images from './data/images';
+import { genUrlFromRoute } from '../../common/utils';
 import { PAY_TYPE_TEXT } from './config';
 import './shop.less';
 
@@ -74,13 +75,14 @@ class ShopForm extends Component {
           payType: values.payType[0],
           receiveUserId: values.receiveUserId,
         });
-        console.log(this.props.shop)
         if (this.props.isEdit) {
           store.saveShop(this.props.shop.shopId, this.props.shop);
         } else {
           store.addShop(this.props.shop);
         }
-        this.props.router.push('shop/list');
+        ap.pushWindow({
+          url: genUrlFromRoute('shop/list'),
+        });
       } else {
         this.setState({
           submitting: false,

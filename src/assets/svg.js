@@ -4,4 +4,5 @@ export default {
   edit: require('./svg/edit.svg'),
   plus: require('./svg/plus.svg'),
   save: require('./svg/save.svg'),
+  scan: require('./svg/scan.svg'),
 };

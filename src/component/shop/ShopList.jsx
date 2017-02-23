@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import store from './store';
 import { NavBar, Icon, Card, WingBlank, WhiteSpace } from 'antd-mobile';
+import { genUrlFromRoute } from '../../common/utils';
 import svg from '../../assets/svg';
 
 class ShopList extends Component {
@@ -15,15 +16,19 @@ class ShopList extends Component {
   }
 
   handleClickBack() {
-    this.props.router.goBack();
+    ap.popTo(-1);
   }
 
   handleClickShop(id) {
-    this.props.router.push(`/shop/view/${id}`);
+    ap.pushWindow({
+      url: genUrlFromRoute(`/shop/view/${id}`),
+    });
   }
 
   handleClickNew() {
-    this.props.router.push('/shop/add');
+    ap.pushWindow({
+      url: genUrlFromRoute('/shop/add'),
+    });
   }
 
   render() {

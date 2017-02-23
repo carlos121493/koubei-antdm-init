@@ -1,9 +1,9 @@
 import React, { Component, PropTypes } from 'react';
 import store from './store';
-import { NavBar, WhiteSpace, Toast, Modal, Icon, List } from 'antd-mobile';
+import { NavBar, WhiteSpace, Icon, List } from 'antd-mobile';
 import { PAY_TYPE_TEXT } from './config';
 import svg from '../../assets/svg';
-const alert = Modal.alert;
+import { genUrlFromRoute } from '../../common/utils';
 const Item = List.Item;
 
 export default class ShopEdit extends Component {
@@ -16,27 +16,33 @@ export default class ShopEdit extends Component {
   }
 
   handleClickBack() {
-    this.props.router.goBack();
+    ap.popTo(-1);
   }
 
   handleEdit(id) {
-    this.props.router.push(`/shop/edit/${id}`);
+    ap.pushWindow({
+      url: genUrlFromRoute(`/shop/edit/${id}`),
+    });
   }
 
   handleDelete(id) {
-    alert('删除', `确定删除${this.shop.shopName}吗？`, [
-      {
-        text: '确定',
-        onPress: () => {
-          store.delShop(id);
-          Toast.info('门店已删除');
-          this.props.router.push('/shop/list');
-        },
-      },
-      {
-        text: '取消',
-      },
-    ]);
+    ap.confirm({
+      title: '删除',
+      content: `确定删除${this.shop.shopName}吗？`,
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+    }, res => {
+      if (res.confirm) {
+        store.delShop(id);
+        ap.showToast({
+          content: '门店已删除',
+          type: 'success',
+        });
+        ap.pushWindow({
+          url: genUrlFromRoute('/shop/list'),
+        });
+      }
+    });
   }
 
   render() {

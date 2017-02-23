@@ -21,3 +21,5 @@ ${autoPrefix(now.getMinutes())}:
 ${autoPrefix(now.getSeconds())}
 `;
 };
+
+export const genUrlFromRoute = (routePath) => `${location.origin}#${routePath}`;

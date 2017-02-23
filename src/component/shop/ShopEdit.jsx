@@ -1,9 +1,9 @@
 import React, { Component, PropTypes } from 'react';
 import store from './store';
 import ShopForm from './ShopForm';
-import { NavBar, WhiteSpace, Toast, Modal, Icon } from 'antd-mobile';
+import { NavBar, WhiteSpace, Icon } from 'antd-mobile';
 import svg from '../../assets/svg';
-const alert = Modal.alert;
+import { genUrlFromRoute } from '../../common/utils';
 
 export default class ShopEdit extends Component {
   constructor(props) {
@@ -14,23 +14,27 @@ export default class ShopEdit extends Component {
   }
 
   handleClickBack() {
-    this.props.router.goBack();
+    ap.popTo(-1);
   }
 
   handleDelete(id) {
-    alert('删除', `确定删除${this.shop.shopName}吗？`, [
-      {
-        text: '确定',
-        onPress: () => {
-          store.delShop(id);
-          Toast.info('门店已删除');
-          this.props.router.push('/shop/list');
-        },
-      },
-      {
-        text: '取消',
-      },
-    ]);
+    ap.confirm({
+      title: '删除',
+      content: `确定删除${this.shop.shopName}吗？`,
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+    }, res => {
+      if (res.confirm) {
+        store.delShop(id);
+        ap.showToast({
+          content: '门店已删除',
+          type: 'success',
+        });
+        ap.pushWindow({
+          url: genUrlFromRoute('/shop/list'),
+        });
+      }
+    });
   }
 
   render() {
