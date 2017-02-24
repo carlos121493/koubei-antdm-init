@@ -107,13 +107,13 @@ class ShopForm extends Component {
         };
 
         if (isEdit) {
-          store.saveShop(shop.shopId, shop);
+          store.saveShop(shopInfo.shopId, shopInfo);
         } else {
-          store.addShop(shop);
+          store.addShop(shopInfo);
         }
         AlipayJSBridge.call('popTo', {
           index: -1,
-          data: shop,
+          data: shopInfo,
         });
       } else {
         this.setState({
@@ -142,8 +142,8 @@ class ShopForm extends Component {
                 type: 'array',
                 required: true,
                 message: '请选择品牌'
-              }, (_, value, cb) => { if(!value[0]) { cb(new Error('请选择品牌')); } cb(); }],
-              initialValue: [brandId],
+              }],
+              initialValue: brandId ? [brandId] : [],
             })}
           >
             <List.Item arrow="horizontal" error={getFieldError('brandId')}>选择品牌</List.Item>
@@ -167,8 +167,8 @@ class ShopForm extends Component {
               rules: [{
                 required: true,
                 message: '请选择地区'
-              }, (_, value, cb) => { if(!value[0]) { cb(new Error('请选择地区')); } cb(); }],
-              initialValue: [provinceId, cityId, districtId],
+              }],
+              initialValue: provinceId && cityId && districtId ? [provinceId, cityId, districtId] : [],
             })}
           >
             <List.Item arrow="horizontal" error={getFieldError('residence')}>选择地区</List.Item>
