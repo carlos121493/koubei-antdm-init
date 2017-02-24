@@ -9,6 +9,36 @@ import images from './data/images';
 import { PAY_TYPE_TEXT } from './config';
 import './shop.less';
 
+/*
+1、门店创建的电话号码不允许为空；
+2、不含“-”的电话号码长度为7到12位。包含固话、手机、400/800号码。
+-对11位长度的号码校验：不是“0或1”开头是错的
+3、含“-”的电话号码长度为10到20位。
+-含一个“-“的电话号码长度为10到15位;
+-含两个“-“的电话号码长度为13到20位；
+-不能连续出现2个“-”，不能在开头和结尾。
+*/
+export function telephone(rule, value, callback) {
+  if (value) {
+    const tempContactArr = value.split(',');
+    tempContactArr.forEach((el) => {
+      if (!/^(\d+(-\d+){2}|\d+(-\d+){1}|\d+)$/.test(el)) {
+        callback(new Error('请填写正确电话号码'));
+        return;
+      }
+      const count = (el.match(/-/g) || []).length;
+      if (count === 0 && el.length === 11 && !/^[01]/.test(el) ||
+        count === 0 && (el.length < 7 || el.length > 12) ||
+        count === 1 && (el.length < 10 || el.length > 15) ||
+        count === 2 && (el.length < 13 || el.length > 20)) {
+        callback(new Error('请填写正确电话号码'));
+        return;
+      }
+    });
+  }
+  callback();
+}
+
 // compose payTypes picker data
 const payTypes = Object.keys(PAY_TYPE_TEXT)
   .map(type => ({ label: PAY_TYPE_TEXT[type], value: type }));
@@ -49,7 +79,8 @@ class ShopForm extends Component {
 
   handleSubmit(e) {
     e.preventDefault();
-    const { validateFields } = this.props.form;
+    const { shop, isEdit, form } = this.props;
+    const { validateFields } = form;
     this.setState({
       submitting: true,
     });
@@ -57,7 +88,7 @@ class ShopForm extends Component {
     validateFields((err, values) => {
       if (!err) {
         const areaFields = getTreeNodes(values.residence, areas);
-        Object.assign(this.props.shop, {
+        const shopInfo = {...shop,
           brandId: values.brandId[0],
           brandName: getBrandName(values.brandId[0]),
           shopName: values.shopName,
@@ -73,14 +104,17 @@ class ShopForm extends Component {
           mobileNo: values.mobileNo,
           payType: values.payType[0],
           receiveUserId: values.receiveUserId,
-        });
-        console.log(this.props.shop)
-        if (this.props.isEdit) {
-          store.saveShop(this.props.shop.shopId, this.props.shop);
+        };
+
+        if (isEdit) {
+          store.saveShop(shopInfo.shopId, shopInfo);
         } else {
-          store.addShop(this.props.shop);
+          store.addShop(shopInfo);
         }
-        this.props.router.push('shop/list');
+        AlipayJSBridge.call('popTo', {
+          index: -1,
+          data: shopInfo,
+        });
       } else {
         this.setState({
           submitting: false,
@@ -90,9 +124,9 @@ class ShopForm extends Component {
   }
 
   render() {
-    const { getFieldProps } = this.props.form;
-
-    const shop = this.props.shop;
+    const { shop, form } = this.props;
+    const { getFieldProps, getFieldError } = form;
+    const { brandId, shopName, provinceId, cityId, districtId, address, categoryIds, receiveUserId, payType, mobileNo } = shop;
 
     return (
       <div>
@@ -104,17 +138,25 @@ class ShopForm extends Component {
             data={brands}
             title="选择品牌"
             {...getFieldProps('brandId', {
-              required: true,
-              initialValue: [shop.brandId],
+              rules: [{
+                type: 'array',
+                required: true,
+                message: '请选择品牌'
+              }],
+              initialValue: brandId ? [brandId] : [],
             })}
           >
-            <List.Item arrow="horizontal">选择品牌</List.Item>
+            <List.Item arrow="horizontal" error={getFieldError('brandId')}>选择品牌</List.Item>
           </Picker>
           <InputItem
             className="shop-form-input"
+            error={getFieldError('shopName')}
             {...getFieldProps('shopName', {
-              required: true,
-              initialValue: shop.shopName,
+              rules: [{
+                required: true,
+                message: '请填写门店名称'
+              }],
+              initialValue: shopName,
             })}
           >门店名称</InputItem>
           <Picker
@@ -122,11 +164,14 @@ class ShopForm extends Component {
             data={areas}
             title="选择地区"
             {...getFieldProps('residence', {
-              required: true,
-              initialValue: [shop.provinceId, shop.cityId, shop.districtId],
+              rules: [{
+                required: true,
+                message: '请选择地区'
+              }],
+              initialValue: provinceId && cityId && districtId ? [provinceId, cityId, districtId] : [],
             })}
           >
-            <List.Item arrow="horizontal">选择地区</List.Item>
+            <List.Item arrow="horizontal" error={getFieldError('residence')}>选择地区</List.Item>
           </Picker>
         </List>
         <List renderHeader={() => '门店Logo'}>
@@ -139,10 +184,14 @@ class ShopForm extends Component {
         </List>
         <List>
           <InputItem
+            error={getFieldError('address')}
             className="shop-form-input"
             {...getFieldProps('address', {
-              required: true,
-              initialValue: shop.address,
+              rules: [{
+                required: true,
+                message: '请填写地址'
+              }],
+              initialValue: address,
             })}
           >
             详细地址
@@ -153,38 +202,54 @@ class ShopForm extends Component {
             data={category}
             title="选择品类"
             {...getFieldProps('categoryIds', {
-              required: true,
-              initialValue: shop.categoryIds,
+              rules: [{
+                required: true,
+                message: '请选择品类'
+              }],
+              initialValue: categoryIds,
             })}
           >
-            <List.Item arrow="horizontal">选择品类</List.Item>
+            <List.Item arrow="horizontal" 
+            error={getFieldError('categoryIds')}>选择品类</List.Item>
           </Picker>
           <InputItem
             className="shop-form-input"
+            error={getFieldError('mobileNo')}
             {...getFieldProps('mobileNo', {
-              required: true,
-              initialValue: shop.mobileNo,
+              rules: [{
+                required: true,
+                message: '请填写门店电话'
+              }, telephone],
+              initialValue: mobileNo,
             })}
           >
             门店电话
           </InputItem>
           <Picker
             extra="请选择收款方式"
+            error={getFieldError('payType')}
             cols={1}
             data={payTypes}
             title="收款方式"
             {...getFieldProps('payType', {
-              required: true,
-              initialValue: [shop.payType],
+              rules: [{
+                required: true,
+                message: '请选择收款方式'
+              }],
+              initialValue: [payType],
             })}
           >
             <List.Item arrow="horizontal">选择收款方式</List.Item>
           </Picker>
           <InputItem
             className="shop-form-input"
+            error={getFieldError('receiveUserId')}
             {...getFieldProps('receiveUserId', {
-              required: true,
-              initialValue: shop.receiveUserId,
+              rules: [{
+                required: true,
+                message: '请填写收款账号'
+              }],
+              initialValue: receiveUserId,
             })}
           >
             收款帐号
@@ -198,6 +263,7 @@ class ShopForm extends Component {
             onClick={this.handleSubmit}
           >提交</Button>
         </WingBlank>
+        <WhiteSpace />
       </div>
     );
   }

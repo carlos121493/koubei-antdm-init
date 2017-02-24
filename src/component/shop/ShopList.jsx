@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import store from './store';
-import { NavBar, Icon, Card, WingBlank, WhiteSpace } from 'antd-mobile';
-import svg from '../../assets/svg';
+import { Card, WingBlank, WhiteSpace } from 'antd-mobile';
+import { genUrlFromRoute } from '../../common/utils';
 
 class ShopList extends Component {
   constructor(props) {
@@ -9,39 +9,56 @@ class ShopList extends Component {
     this.state = {
       shopList: store.getList(),
     };
-    this.handleClickBack = this.handleClickBack.bind(this);
-    this.handleClickShop = this.handleClickShop.bind(this);
-    this.handleClickNew = this.handleClickNew.bind(this);
+  }
+
+  componentWillMount() {
+    AlipayJSBridge.call('setTitle', {
+      title: '门店列表',
+    });
+    AlipayJSBridge.call('setOptionMenu', {
+      title: '+',
+      color: '#108ee9',
+    });
+    AlipayJSBridge.call('showOptionMenu');
+    document.addEventListener('back', () => {
+      this.handleClickBack();
+    }, false);
+    document.addEventListener('optionMenu', () => {
+      this.handleClickNew();
+    }, false);
+    document.addEventListener('resume', e => {
+      if (e.data && e.data.shopName) {
+        const { shopList } = this.state;
+        this.setState({
+          shopList: [...shopList, e.data],
+        });
+      } else {
+        window.location.reload(); // 有可能是编辑后过来，弱可以预知哪一个可以相应改动。
+      }
+    }, false);
   }
 
   handleClickBack() {
-    this.props.router.goBack();
+    AlipayJSBridge.call('hideOptionMenu');
   }
 
   handleClickShop(id) {
-    this.props.router.push(`/shop/view/${id}`);
+    AlipayJSBridge.call('pushWindow', {
+      url: genUrlFromRoute(`/shop/view/${id}`),
+    });
+    AlipayJSBridge.call('hideOptionMenu');
   }
 
   handleClickNew() {
-    this.props.router.push('/shop/add');
+    AlipayJSBridge.call('pushWindow', {
+      url: genUrlFromRoute('/shop/add'),
+    });
+    AlipayJSBridge.call('hideOptionMenu');
   }
 
   render() {
     return (
       <div>
-        <NavBar
-          leftContent="返回"
-          mode="light"
-          onLeftClick={this.handleClickBack}
-          rightContent={[
-            <a key="0" onClick={this.handleClickNew}>
-              <Icon
-                type={svg.plus}
-              />
-            </a>,
-          ]}
-        >门店
-        </NavBar>
         {this.state.shopList.map(shop => (
           <div key={shop.shopId} onClick={() => this.handleClickShop(shop.shopId)}>
             <WingBlank>

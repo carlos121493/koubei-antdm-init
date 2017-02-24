@@ -2,14 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import 'babel-polyfill';
 import { Router, Route, hashHistory } from 'react-router';
-import userRoutes from '../component/user/routes';
 import shopRoutes from '../component/shop/routes';
 
 const RouteArray = [{
   path: '/',
-  onEnter: (nextState, replace) => replace('/user/login'),
+  onEnter: (nextState, replace) => replace('/shop/list'),
 }]
-  .concat(userRoutes)
   .concat(shopRoutes);
 
 const RouteCollection = RouteArray.map((props, index) =>
@@ -32,4 +30,3 @@ ready(() => {
     document.getElementById('react-content')
   );
 });
-
