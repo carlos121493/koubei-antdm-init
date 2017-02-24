@@ -1,6 +1,6 @@
 {
   "globals": {
-    "ap": false,
+    "AlipayJSBridge": false,
     "require": false
   },
   "extends": "eslint-config-airbnb"

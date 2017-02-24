@@ -31,9 +31,11 @@
     "eslint-plugin-react": "^5.1.1",
     "expect": "^1.20.1",
     "glob": "^7.1.1",
+    "kb-merchant-theme": "^1.0.2",
     "postcss-pxtorem": "^3.3.1",
     "svg-sprite-loader": "^0.3.0"
   },
+  "theme": "./node_modules/kb-merchant-theme/index.js",
   "scripts": {
     "start": "dora -p 8001 --plugins webpack?publicPath=/${npm_package_family}/${npm_package_name}/,proxy?port=8981",
     "lint": "eslint --ext .js,.jsx src",
